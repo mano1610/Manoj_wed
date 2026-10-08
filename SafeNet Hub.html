@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SafeNet Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}</style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors">
+<div id="app"></div>
+<script>
+const COURSES=[
+{id:'c1',title:'Password Mastery',level:'Beginner',category:'Passwords',description:'Learn how to create and manage unbreakable passwords.',content:'Strong passwords are your first line of defense. Use a mix of uppercase, lowercase, numbers, and symbols. Avoid common words.',questions:[{q:'Which is the strongest password?',options:['password123','MyDogSpot','Tr0ub4dour&3','12345678'],a:2},{q:'Should you reuse passwords?',options:['Yes, it is easier','No, never','Only for unimportant sites'],a:1}]},
+{id:'c2',title:'Phishing Defense',level:'Beginner',category:'Phishing',description:'Spot fake emails and websites before they trick you.',content:"Phishing attempts often create a sense of urgency. Always check the sender's email address carefully and hover over links before clicking.",questions:[{q:'What is a common sign of phishing?',options:['Personalized greetings','Sense of extreme urgency','Correct spelling'],a:1},{q:'If an email asks for your password, you should:',options:['Reply with it','Click the link to verify','Report and delete it'],a:2}]},
+{id:'c3',title:'Safe Public Wi-Fi',level:'Intermediate',category:'Network',description:'Protect your data when browsing at cafes and airports.',content:'Public Wi-Fi is inherently insecure. Never access banking or sensitive accounts without a VPN (Virtual Private Network).',questions:[{q:'What should you use on public Wi-Fi?',options:['A VPN','An open proxy','Nothing extra'],a:0},{q:'Is it safe to do banking on cafe Wi-Fi without a VPN?',options:['Yes','No'],a:1}]},
+{id:'c4',title:'Advanced Malware Analysis',level:'Advanced',category:'Malware',description:'Deep dive into how malware operates and hides.',content:'Malware often uses obfuscation techniques to avoid detection by standard antivirus. Behavioral analysis is key.',questions:[{q:'What technique hides malware code?',options:['Encryption','Obfuscation','Compression','All of the above'],a:3},{q:'Behavioral analysis looks at:',options:['File signatures','What the program actually does','File size'],a:1}]}];
+const NEWS=[
+{id:1,title:'Critical Zero-Day in Popular Browser',severity:'High',date:'Oct 24, 2023',summary:'A critical vulnerability allows remote code execution. Update immediately.'},
+{id:2,title:'New Phishing Campaign Targeting Seniors',severity:'Medium',date:'Oct 22, 2023',summary:'Scammers are pretending to be Medicare representatives over email.'},
+{id:3,title:'Routine Maintenance for Password Managers',severity:'Low',date:'Oct 20, 2023',summary:'Ensure your password manager extensions are up to date.'}];
+const FAQS=[
+{q:'What is a VPN?',a:'A Virtual Private Network encrypts your internet traffic and hides your online identity.'},
+{q:'How often should I change passwords?',a:'Change them if you suspect a breach, or use a password manager to maintain strong, unique passwords for every site.'},
+{q:'What is Two-Factor Authentication (2FA)?',a:'An extra layer of security requiring not just a password, but also a second piece of information (like a code sent to your phone).'}];
+
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S={view:'home',course:null,quiz:null,hack:false,menu:false,
+ theme:ls.get('safenet_theme',window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),
+ progress:ls.get('safenet_progress',{})};
+
+const sevBg=s=>s==='High'?'bg-red-500':s==='Medium'?'bg-orange-500':'bg-teal-500';
+const inp='w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 outline-none';
+const lbl='block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
+const btn=(act,label,v='primary',extra='',data='')=>{
+ const c={primary:'bg-teal-600 hover:bg-teal-700 text-white shadow-md',secondary:'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600',outline:'border-2 border-teal-600 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30'}[v];
+ return `<button data-act="${act}" ${data} class="px-4 py-2 rounded-lg font-medium transition ${c} ${extra}">${label}</button>`};
+const card=(inner,cls='')=>`<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 ${cls}">${inner}</div>`;
+
+const nav=[['home','Home'],['learning','Learning Hub'],['portal','Safety Portal'],['news','News'],['resources','Resources'],['about','About']];
+
+function home(){return `<div class="space-y-12">
+<section class="text-center py-14 px-4 bg-gradient-to-b from-slate-100 to-white dark:from-slate-800 dark:to-slate-900 rounded-3xl border border-slate-200 dark:border-slate-700">
+<div class="text-6xl mb-4">🛡️</div>
+<h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Your Digital Safety,<br class="hidden md:block"> Simplified.</h1>
+<p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-8">SafeNet Hub is your comprehensive guide to navigating the digital world securely. Learn, protect, and report — all in one place.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">${btn('nav','Start Learning →','primary','text-lg px-8 py-3','data-v="learning"')}${btn('nav','Check Password Strength','outline','text-lg px-8 py-3','data-v="portal"')}</div></section>
+<section><div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-bold">📖 Featured Lessons</h2><button data-act="nav" data-v="learning" class="text-teal-600 dark:text-teal-400 font-medium hover:underline">View All</button></div>
+<div class="grid md:grid-cols-2 gap-6">${COURSES.slice(0,2).map(c=>`<div data-act="nav" data-v="learning" class="cursor-pointer hover:shadow-md transition">${card(`<span class="text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 block mb-2">${c.level}</span><h3 class="text-xl font-bold mb-2">${c.title}</h3><p class="text-slate-600 dark:text-slate-400">${c.description}</p>`)}</div>`).join('')}</div></section>
+<section><h2 class="text-2xl font-bold mb-6">⚠️ Latest Security Alerts</h2><div class="space-y-4">${NEWS.slice(0,2).map(n=>`<div class="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-100 dark:border-orange-900/30"><h4 class="font-bold flex flex-wrap items-center gap-2">${n.title}<span class="text-xs px-2 py-0.5 rounded-full text-white ${sevBg(n.severity)}">${n.severity}</span></h4><p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${n.summary}</p></div>`).join('')}</div></section></div>`}
+
+function learning(){
+ const c=S.course;
+ if(c){const q=S.quiz;let body;
+  if(!q)body=`<p class="text-lg text-slate-700 dark:text-slate-300 mb-6">${c.content}</p>${btn('startquiz','Take the Quiz')}`;
+  else if(!q.finished){const cq=c.questions[q.cur];body=`<h3 class="text-xl font-bold mb-3">Question ${q.cur+1} of ${c.questions.length}</h3><p class="text-lg mb-4">${cq.q}</p><div class="space-y-3">${cq.options.map((o,i)=>`<button data-act="answer" data-i="${i}" class="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:border-teal-400 transition">${o}</button>`).join('')}</div>`}
+  else body=`<div class="text-center py-6"><div class="text-5xl mb-3">✅</div><h3 class="text-2xl font-bold mb-2">Quiz Completed!</h3><p class="text-lg text-slate-600 dark:text-slate-400 mb-6">You scored ${q.score} out of ${c.questions.length}.</p><div class="flex gap-3 justify-center">${btn('startquiz','Retry Quiz','outline')}${btn('back','Return to Hub')}</div></div>`;
+  return `<div class="max-w-3xl mx-auto"><button data-act="back" class="mb-6 text-teal-600 dark:text-teal-400 hover:underline">← Back to Courses</button>${card(`<span class="text-sm font-semibold text-teal-600 dark:text-teal-400">${c.level} • ${c.category}</span><h2 class="text-3xl font-bold mt-2 mb-6">${c.title}</h2>${body}`)}</div>`}
+ return `<div class="space-y-8"><div class="text-center max-w-2xl mx-auto mb-8"><h2 class="text-3xl font-bold mb-3">Learning Hub</h2><p class="text-slate-600 dark:text-slate-400">Master cybersecurity basics at your own pace. Choose a course below to begin.</p></div>${['Beginner','Intermediate','Advanced'].map(l=>`<div class="space-y-4"><h3 class="text-xl font-bold border-b border-slate-200 dark:border-slate-700 pb-2">${l} Courses</h3><div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">${COURSES.filter(c=>c.level===l).map(c=>{const p=S.progress[c.id]||0;return card(`<div class="flex justify-between"><span class="text-xs font-bold uppercase text-teal-600 dark:text-teal-400">${c.category}</span>${p===100?'<span>✅</span>':''}</div><h4 class="text-lg font-bold my-2">${c.title}</h4><p class="text-sm text-slate-600 dark:text-slate-400 mb-4">${c.description}</p><div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4"><div class="bg-teal-500 h-2 rounded-full" style="width:${p}%"></div></div>${btn('start',p>0?(p===100?'Review Course':'Continue'):'Start Course',p===100?'secondary':'primary','w-full',`data-id="${c.id}"`)}`)}).join('')}</div></div>`).join('')}</div>`}
+
+function portal(){return `<div class="max-w-4xl mx-auto space-y-8"><div class="text-center mb-8"><h2 class="text-3xl font-bold mb-3">Online Safety Portal</h2><p class="text-slate-600 dark:text-slate-400">Practical tools to test your security and report incidents.</p></div>
+<div class="grid md:grid-cols-2 gap-8">
+${card(`<h3 class="text-xl font-bold mb-4">🔒 Password Strength Checker</h3><p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Type a password to test its strength. <strong>This runs entirely in your browser; nothing is saved or transmitted.</strong></p><input id="pwd" type="password" autocomplete="off" placeholder="Enter a password to test..." class="${inp} py-3 mb-4"><div class="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div id="pbar" class="h-full transition-all duration-300" style="width:0"></div></div><p id="plabel" class="text-sm font-bold mt-3"></p>`)}
+<div class="bg-red-50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 rounded-xl p-6"><div data-act="hack" class="flex items-center gap-3 cursor-pointer select-none"><span class="text-2xl">🚨</span><h3 class="text-xl font-bold flex-grow">I've been hacked!</h3><span>${S.hack?'▲':'▼'}</span></div><p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Emergency step-by-step recovery guide.</p>
+${S.hack?`<ol class="list-decimal list-inside space-y-3 text-sm mt-4"><li><strong>Disconnect:</strong> Turn off Wi-Fi or unplug your network cable immediately.</li><li><strong>Change Passwords:</strong> Use a different, uncompromised device to change critical passwords (email, banking).</li><li><strong>Enable 2FA:</strong> Turn on Two-Factor Authentication wherever possible.</li><li><strong>Scan for Malware:</strong> Run a full system scan with reputable antivirus software.</li><li><strong>Notify Contacts:</strong> Warn friends/family so they ignore suspicious messages.</li><li><strong>Monitor Accounts:</strong> Check bank statements and credit reports for unauthorized activity.</li></ol>`:''}</div></div>
+${card(`<h3 class="text-xl font-bold mb-4">Report an Incident (Simulation)</h3><form data-form="Report submitted securely (Simulation)." class="space-y-4"><div class="grid md:grid-cols-2 gap-4"><div><label class="${lbl}">Incident Type</label><select class="${inp}"><option>Phishing Email</option><option>Malware/Virus</option><option>Identity Theft</option><option>Other Scam</option></select></div><div><label class="${lbl}">Date of Incident</label><input type="date" required class="${inp}"></div></div><div><label class="${lbl}">Description</label><textarea required rows="4" class="${inp}" placeholder="Provide details without including sensitive personal data like SSN or full credit card numbers..."></textarea></div><button type="submit" class="px-4 py-2 rounded-lg font-medium bg-teal-600 hover:bg-teal-700 text-white shadow-md">Submit Report Securely</button><p class="msg text-sm font-medium text-teal-600 dark:text-teal-400"></p></form>`)}</div>`}
+
+function news(){return `<div class="max-w-4xl mx-auto space-y-6"><h2 class="text-3xl font-bold mb-6">Security News &amp; Alerts</h2>${NEWS.map(n=>card(`<div class="flex justify-between items-start mb-2"><span class="text-xs font-bold px-2 py-1 rounded-md text-white ${sevBg(n.severity)}">${n.severity} Severity</span><span class="text-sm text-slate-500 dark:text-slate-400">${n.date}</span></div><h3 class="text-xl font-bold mb-2">${n.title}</h3><p class="text-slate-600 dark:text-slate-300">${n.summary}</p>`)).join('')}</div>`}
+
+function resources(){return `<div class="max-w-4xl mx-auto"><h2 class="text-3xl font-bold mb-6">Resources &amp; Glossary</h2><div class="space-y-4">${FAQS.map(f=>`<details class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"><summary class="cursor-pointer p-6 font-bold">${f.q}</summary><div class="px-6 pb-6 text-slate-600 dark:text-slate-300">${f.a}</div></details>`).join('')}</div></div>`}
+
+function about(){return `<div class="max-w-3xl mx-auto space-y-8">${card(`<div class="text-center py-6"><div class="text-5xl mb-4">🛡️</div><h2 class="text-3xl font-bold mb-4">About SafeNet Hub</h2><p class="text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto">Our mission is to democratize cybersecurity knowledge. We believe everyone deserves to feel safe and confident in the digital world, regardless of their technical background.</p></div>`)}
+${card(`<h3 class="text-2xl font-bold mb-6">✉️ Contact Us</h3><form data-form="Message sent (Simulation)." class="space-y-4"><div><label class="${lbl}">Name</label><input required class="${inp}"></div><div><label class="${lbl}">Email</label><input type="email" required class="${inp}"></div><div><label class="${lbl}">Message</label><textarea required rows="4" class="${inp}"></textarea></div><button type="submit" class="px-4 py-2 rounded-lg font-medium bg-teal-600 hover:bg-teal-700 text-white shadow-md">Send Message</button><p class="msg text-sm font-medium text-teal-600 dark:text-teal-400"></p></form>`)}</div>`}
+
+const views={home,learning,portal,news,resources,about};
+
+function render(){
+ document.documentElement.classList.toggle('dark',S.theme==='dark');
+ const link=(i,[id,l])=>`<button data-act="nav" data-v="${id}" class="${i?'block w-full text-left px-3 py-3 text-base':'px-3 py-2 text-sm'} rounded-md font-medium ${S.view===id?'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400':'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}">${l}</button>`;
+ document.getElementById('app').innerHTML=`<nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"><div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-16">
+<div data-act="nav" data-v="home" class="flex items-center gap-2 cursor-pointer"><span class="bg-teal-600 text-white p-1.5 rounded-lg">🛡️</span><span class="text-xl font-bold tracking-tight">SafeNet Hub</span></div>
+<div class="hidden md:flex items-center gap-1">${nav.map(n=>link(0,n)).join('')}<button data-act="theme" class="ml-3 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Toggle theme">${S.theme==='dark'?'☀️':'🌙'}</button></div>
+<div class="md:hidden flex items-center gap-1"><button data-act="theme" class="p-2" aria-label="Toggle theme">${S.theme==='dark'?'☀️':'🌙'}</button><button data-act="menu" class="p-2 text-xl" aria-label="Menu">${S.menu?'✕':'☰'}</button></div></div>
+${S.menu?`<div class="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-2">${nav.map(n=>link(1,n)).join('')}</div>`:''}</nav>
+<main class="max-w-7xl mx-auto px-4 py-8 md:py-12 min-h-[70vh]">${views[S.view]()}</main>
+<footer class="bg-slate-900 text-slate-400 py-10 mt-8"><div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8"><div><div class="text-white font-bold text-xl mb-3">🛡️ SafeNet Hub</div><p class="text-sm">Empowering users with the knowledge and tools to stay secure in a digital world.</p></div><div><h4 class="text-white font-bold mb-3">Quick Links</h4><ul class="space-y-2 text-sm">${[['learning','Learning Hub'],['portal','Safety Portal'],['resources','Resources']].map(([v,l])=>`<li><button data-act="nav" data-v="${v}" class="hover:text-teal-400">${l}</button></li>`).join('')}</ul></div><div><h4 class="text-white font-bold mb-3">Legal</h4><ul class="space-y-2 text-sm"><li>Privacy Policy</li><li>Terms of Service</li><li>Accessibility Statement</li></ul></div></div><p class="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-slate-800 text-sm text-center">© ${new Date().getFullYear()} SafeNet Hub. Educational project. Not a substitute for professional IT security advice.</p></footer>`;
+}
+
+function score(p){let s=0;if(p.length>8)s++;if(p.length>12)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;return Math.min(s,4)}
+const LAB=['Very Weak','Weak','Fair','Strong','Very Strong'],COL=['#ef4444','#f97316','#eab308','#2dd4bf','#0d9488'];
+
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-act]');if(!t)return;
+ const a=t.dataset.act;
+ if(a==='nav'){S.view=t.dataset.v;S.course=null;S.quiz=null;S.menu=false;scrollTo({top:0,behavior:'smooth'})}
+ else if(a==='theme'){S.theme=S.theme==='dark'?'light':'dark';ls.set('safenet_theme',S.theme)}
+ else if(a==='menu')S.menu=!S.menu;
+ else if(a==='hack')S.hack=!S.hack;
+ else if(a==='start'){S.course=COURSES.find(c=>c.id===t.dataset.id);S.quiz=null}
+ else if(a==='back'){S.course=null;S.quiz=null}
+ else if(a==='startquiz')S.quiz={cur:0,score:0,finished:false};
+ else if(a==='answer'){const c=S.course,q=S.quiz;if(c.questions[q.cur].a===+t.dataset.i)q.score++;q.cur++;
+  if(q.cur>=c.questions.length){q.finished=true;S.progress[c.id]=Math.max(S.progress[c.id]||0,Math.round(q.score/c.questions.length*100));ls.set('safenet_progress',S.progress)}}
+ render();
+});
+document.addEventListener('input',e=>{
+ if(e.target.id!=='pwd')return;
+ const p=e.target.value,s=score(p),b=document.getElementById('pbar'),l=document.getElementById('plabel');
+ b.style.width=p?(s+1)*20+'%':'0';b.style.background=COL[s];
+ l.textContent=p?'Strength: '+LAB[s]:'';l.style.color=COL[s];
+});
+document.addEventListener('submit',e=>{
+ const f=e.target.closest('[data-form]');if(!f)return;
+ e.preventDefault();f.querySelector('.msg').textContent=f.dataset.form;f.reset();
+});
+render();
+</script>
+</body>
+</html>
